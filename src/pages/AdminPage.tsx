@@ -21,6 +21,11 @@ export default function AdminPage() {
     null,
   )
 
+  useEffect(() => {
+    document.body.classList.add('admin-route')
+    return () => document.body.classList.remove('admin-route')
+  }, [])
+
   if (!authed) return <Login onOk={() => setAuthed(true)} />
 
   if (!draft) return <AdminLoader onLoad={setDraft} />
@@ -205,7 +210,10 @@ function Login({ onOk }: { onOk: () => void }) {
           ENTER ADMIN
         </button>
       </form>
-      <Link to="/" className="mt-8 font-mono text-[10px] tracking-[0.3em] text-bone/40 hover:text-bone">
+      <p className="mt-6 font-mono text-[9px] tracking-[0.2em] text-bone/30">
+        trial password: admin
+      </p>
+      <Link to="/" className="mt-4 font-mono text-[10px] tracking-[0.3em] text-bone/40 hover:text-bone">
         ← BACK TO SITE
       </Link>
     </div>

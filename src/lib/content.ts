@@ -147,4 +147,4 @@ export function downloadContent(data: SiteContent) {
   URL.revokeObjectURL(url)
 }
 
-export const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD ?? 'vn2026'
+export const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD ?? 'admin'

@@ -31,6 +31,20 @@ body {
   cursor: none;
 }
 
+body.admin-route,
+body.admin-route a,
+body.admin-route button,
+body.admin-route input,
+body.admin-route select,
+body.admin-route label {
+  cursor: auto;
+}
+
+body.admin-route button,
+body.admin-route a[href] {
+  cursor: pointer;
+}
+
 @media (pointer: coarse) {
   body {
     cursor: auto;
