@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Lenis from 'lenis'
+import { useMediaUnlock, unlockAllMedia } from './lib/unlockMedia'
 import Preloader from './components/Preloader'
 import Cursor from './components/Cursor'
 import Nav from './components/Nav'
@@ -13,6 +14,7 @@ import Footer from './components/Footer'
 
 export default function App() {
   const [ready, setReady] = useState(false)
+  useMediaUnlock()
 
   useEffect(() => {
     // Safari: native scroll is smooth already, and Lenis' main-thread
@@ -35,6 +37,7 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.style.overflow = ready ? '' : 'hidden'
+    if (ready) unlockAllMedia()
   }, [ready])
 
   return (

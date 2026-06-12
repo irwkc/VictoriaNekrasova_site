@@ -1,55 +1,50 @@
-import { useEffect, useRef, type VideoHTMLAttributes, type Ref } from 'react'
+import { useEffect, useRef, type Ref, type VideoHTMLAttributes } from 'react'
+import { primeVideo, registerVideo, unregisterVideo } from '../lib/unlockMedia'
 
-type Props = VideoHTMLAttributes<HTMLVideoElement> & { ref?: Ref<HTMLVideoElement> }
+type Props = Omit<VideoHTMLAttributes<HTMLVideoElement>, 'ref'> & {
+  ref?: Ref<HTMLVideoElement>
+}
 
-/**
- * Muted looping video that actually autoplays in Safari (React doesn't render
- * the `muted` attribute, so we set it imperatively before calling play) and
- * pauses itself when scrolled out of the viewport.
- */
-export default function AutoVideo({ ref, ...props }: Props) {
+export default function AutoVideo({ ref, src, className, onTimeUpdate, ...rest }: Props) {
   const inner = useRef<HTMLVideoElement | null>(null)
 
   useEffect(() => {
     const el = inner.current
     if (!el) return
-    el.muted = true
-    el.defaultMuted = true
 
-    let visible = false
-    const tryPlay = () => {
-      if (visible && el.paused) el.play().catch(() => {})
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        visible = entries[entries.length - 1].isIntersecting
-        if (visible) tryPlay()
-        else el.pause()
-      },
-      { rootMargin: '50px' },
-    )
-    io.observe(el)
-    // Safari may reject the first play() before data is ready — retry once loaded
-    el.addEventListener('canplay', tryPlay)
+    registerVideo(el)
+
+    const retry = () => el.play().catch(() => {})
+    el.addEventListener('loadeddata', retry)
+    el.addEventListener('canplay', retry)
+
     return () => {
-      io.disconnect()
-      el.removeEventListener('canplay', tryPlay)
+      el.removeEventListener('loadeddata', retry)
+      el.removeEventListener('canplay', retry)
+      unregisterVideo(el)
     }
-  }, [])
+  }, [src])
 
   return (
     <video
       ref={(el) => {
         inner.current = el
+        if (el) primeVideo(el)
         if (typeof ref === 'function') ref(el)
         else if (ref) ref.current = el
       }}
+      src={src}
+      className={className}
+      onTimeUpdate={onTimeUpdate}
       muted
-      loop
+      defaultMuted
       playsInline
       autoPlay
+      loop
       preload="auto"
-      {...props}
+      controls={false}
+      disablePictureInPicture
+      {...rest}
     />
   )
 }

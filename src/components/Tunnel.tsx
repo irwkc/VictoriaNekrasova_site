@@ -2,7 +2,6 @@ import { Suspense, useMemo, useRef } from 'react'
 import { Canvas, useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useSectionProgress, useSectionProgressState } from '../lib/useSectionProgress'
-import { useInViewport } from '../lib/useInViewport'
 
 const PHOTOS = [
   '/photos/dapple2.jpg',
@@ -106,7 +105,6 @@ export default function Tunnel() {
   const section = useRef<HTMLElement>(null)
   const progress = useSectionProgress(section)
   const pct = useSectionProgressState(section, 200) * 100
-  const inView = useInViewport(section)
 
   return (
     <section ref={section} id="archive" className="relative h-[480vh] bg-ink">
@@ -114,7 +112,7 @@ export default function Tunnel() {
         <Canvas
           className="!absolute inset-0"
           dpr={[1, 1.5]}
-          frameloop={inView ? 'always' : 'never'}
+          frameloop="always"
           camera={{ fov: 62, position: [0, 0, 5], near: 0.1, far: 60 }}
           gl={{ powerPreference: 'high-performance' }}
         >

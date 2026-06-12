@@ -2,8 +2,6 @@ import { useMemo, useRef } from 'react'
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { motion } from 'motion/react'
-import { useInViewport } from '../lib/useInViewport'
-
 const vertex = /* glsl */ `
   varying vec2 vUv;
   void main() {
@@ -124,14 +122,12 @@ const fade = {
 }
 
 export default function Hero() {
-  const section = useRef<HTMLElement>(null)
-  const inView = useInViewport(section)
   return (
-    <section ref={section} id="top" className="relative h-[100svh] overflow-hidden">
+    <section id="top" className="relative h-[100svh] overflow-hidden">
       <Canvas
         className="!absolute inset-0"
         dpr={[1, 1.5]}
-        frameloop={inView ? 'always' : 'never'}
+        frameloop="always"
         gl={{ antialias: false, powerPreference: 'high-performance' }}
         camera={{ position: [0, 0, 1] }}
       >
