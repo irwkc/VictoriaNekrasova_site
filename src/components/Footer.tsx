@@ -32,6 +32,19 @@ export default function Footer() {
           </span>
           <span>©2026 VN.ARCHIVE — ALL FRAMES RESERVED</span>
         </div>
+
+        <p className="mt-10 font-mono text-[9px] tracking-[0.25em] text-bone/30">
+          Made by{' '}
+          <a
+            href="https://github.com/irwkc"
+            target="_blank"
+            rel="noreferrer"
+            className="text-bone/50 hover:text-blood transition-colors duration-200"
+            data-hover
+          >
+            irwkc
+          </a>
+        </p>
       </div>
     </footer>
   )

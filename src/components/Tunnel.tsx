@@ -2,26 +2,12 @@ import { Suspense, useMemo, useRef } from 'react'
 import { Canvas, useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useScrollPin } from '../lib/useScrollPin'
-
-const PHOTOS = [
-  '/photos/dapple2.jpg',
-  '/photos/sheer2.jpg',
-  '/photos/chains1.jpg',
-  '/photos/red1.jpg',
-  '/photos/suit2.jpg',
-  '/photos/tux1.jpg',
-  '/photos/coat1.jpg',
-  '/photos/crop1.jpg',
-  '/photos/suit5.jpg',
-  '/photos/chains3.jpg',
-  '/photos/red3.jpg',
-  '/photos/sheer4.jpg',
-]
+import { useContent } from '../context/ContentProvider'
 
 const GAP = 7
 
-function Corridor({ progress }: { progress: React.RefObject<number> }) {
-  const textures = useLoader(THREE.TextureLoader, PHOTOS)
+function Corridor({ progress, photos }: { progress: React.RefObject<number>; photos: string[] }) {
+  const textures = useLoader(THREE.TextureLoader, photos)
   const group = useRef<THREE.Group>(null)
   const cam = useRef(new THREE.Vector3())
 
@@ -46,7 +32,7 @@ function Corridor({ progress }: { progress: React.RefObject<number> }) {
 
   useFrame((state) => {
     const p = progress.current ?? 0
-    const travel = (PHOTOS.length - 1) * GAP + 6
+    const travel = (photos.length - 1) * GAP + 6
     const z = 5 - p * travel
     cam.current.set(state.pointer.x * 0.4, state.pointer.y * 0.25, z)
     state.camera.position.lerp(cam.current, 0.12)
@@ -61,12 +47,12 @@ function Corridor({ progress }: { progress: React.RefObject<number> }) {
           <meshBasicMaterial map={pl.tex} toneMapped={false} />
         </mesh>
       ))}
-      <Dust />
+      <Dust count={photos.length} />
     </group>
   )
 }
 
-function Dust() {
+function Dust({ count }: { count: number }) {
   const ref = useRef<THREE.Points>(null)
   const { positions, colors } = useMemo(() => {
     const n = 350
@@ -77,14 +63,14 @@ function Dust() {
     for (let i = 0; i < n; i++) {
       positions[i * 3] = (Math.random() - 0.5) * 14
       positions[i * 3 + 1] = (Math.random() - 0.5) * 8
-      positions[i * 3 + 2] = -Math.random() * PHOTOS.length * GAP - 2
+      positions[i * 3 + 2] = -Math.random() * count * GAP - 2
       const c = Math.random() < 0.12 ? red : white
       colors[i * 3] = c.r
       colors[i * 3 + 1] = c.g
       colors[i * 3 + 2] = c.b
     }
     return { positions, colors }
-  }, [])
+  }, [count])
 
   useFrame((state) => {
     if (ref.current) ref.current.rotation.z = state.clock.elapsedTime * 0.015
@@ -103,6 +89,8 @@ function Dust() {
 
 export default function Tunnel() {
   const section = useRef<HTMLElement>(null)
+  const { content } = useContent()
+  const photos = content.corridor
   const { progress, phase, progressUi, layout } = useScrollPin(section, 3.8)
   const pct = progressUi * 100
 
@@ -130,6 +118,7 @@ export default function Tunnel() {
     >
       <div className="overflow-hidden" style={pinStyle}>
         <Canvas
+          key={photos.join('|')}
           className="!absolute inset-0"
           dpr={[1, 1.5]}
           frameloop="always"
@@ -139,7 +128,7 @@ export default function Tunnel() {
           <color attach="background" args={['#0a0a0a']} />
           <fog attach="fog" args={['#0a0a0a', 6, 26]} />
           <Suspense fallback={null}>
-            <Corridor progress={progress} />
+            <Corridor progress={progress} photos={photos} />
           </Suspense>
         </Canvas>
 

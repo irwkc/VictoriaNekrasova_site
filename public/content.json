@@ -1,0 +1,27 @@
+{
+  "corridor": [
+    "/photos/dapple2.jpg",
+    "/photos/sheer2.jpg",
+    "/photos/chains1.jpg",
+    "/photos/red1.jpg",
+    "/photos/suit2.jpg",
+    "/photos/tux1.jpg",
+    "/photos/coat1.jpg",
+    "/photos/crop1.jpg",
+    "/photos/suit5.jpg",
+    "/photos/chains3.jpg",
+    "/photos/red3.jpg",
+    "/photos/sheer4.jpg"
+  ],
+  "gallery": [
+    { "src": "/photos/chains2.jpg", "cap": "MOB JOURNAL — VOL.13", "span": "md:col-span-5 md:row-span-2" },
+    { "src": "/photos/suit1.jpg", "cap": "TAILORING STUDY — B/W", "span": "md:col-span-4" },
+    { "src": "/photos/red2.jpg", "cap": "BLAZER / RED ROOM", "span": "md:col-span-3" },
+    { "src": "/photos/sheer1.jpg", "cap": "PARK BY OSIPCHUK", "span": "md:col-span-3" },
+    { "src": "/photos/tux3.jpg", "cap": "LE SMOKING — 35MM", "span": "md:col-span-4" },
+    { "src": "/photos/coat2.jpg", "cap": "RAINCOAT — STUDIO", "span": "md:col-span-4 md:row-span-2" },
+    { "src": "/photos/crop3.jpg", "cap": "DENIM / OFF-DUTY", "span": "md:col-span-4" },
+    { "src": "/photos/chains4.jpg", "cap": "GOLD CHAINS — DETAIL", "span": "md:col-span-4" },
+    { "src": "/photos/sheer3.jpg", "cap": "MESH — RED LIP", "span": "md:col-span-4" }
+  ]
+}
