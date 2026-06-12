@@ -1,54 +1,90 @@
-import { useEffect } from 'react'
-
 const pool = new Set<HTMLVideoElement>()
-let unlocked = false
+const watchers = new Map<HTMLVideoElement, ReturnType<typeof setInterval>>()
 
 export function primeVideo(el: HTMLVideoElement) {
   el.muted = true
   el.defaultMuted = true
   el.volume = 0
+  el.autoplay = true
+  el.loop = true
   el.playsInline = true
+  el.controls = false
+  el.disablePictureInPicture = true
   el.setAttribute('muted', '')
+  el.setAttribute('autoplay', '')
+  el.setAttribute('loop', '')
   el.setAttribute('playsinline', '')
   el.setAttribute('webkit-playsinline', '')
+  el.setAttribute('x-webkit-airplay', 'deny')
+  el.setAttribute('controlsList', 'nodownload nofullscreen noremoteplayback')
+}
+
+export function tryPlay(el: HTMLVideoElement) {
+  primeVideo(el)
+  el.play().catch(() => {})
+}
+
+function watchPlaying(el: HTMLVideoElement) {
+  if (watchers.has(el)) return () => {}
+
+  const id = window.setInterval(() => {
+    if (el.paused && !document.hidden) tryPlay(el)
+  }, 400)
+  watchers.set(el, id)
+
+  const onPause = () => {
+    if (!document.hidden) requestAnimationFrame(() => tryPlay(el))
+  }
+  el.addEventListener('pause', onPause)
+
+  const resume = () => tryPlay(el)
+  el.addEventListener('loadeddata', resume)
+  el.addEventListener('canplay', resume)
+  el.addEventListener('canplaythrough', resume)
+
+  return () => {
+    clearInterval(id)
+    watchers.delete(el)
+    el.removeEventListener('pause', onPause)
+    el.removeEventListener('loadeddata', resume)
+    el.removeEventListener('canplay', resume)
+    el.removeEventListener('canplaythrough', resume)
+  }
 }
 
 export function registerVideo(el: HTMLVideoElement) {
   pool.add(el)
-  primeVideo(el)
-  el.play().catch(() => {})
-  if (unlocked) el.play().catch(() => {})
+  tryPlay(el)
+  return watchPlaying(el)
 }
 
 export function unregisterVideo(el: HTMLVideoElement) {
   pool.delete(el)
+  const id = watchers.get(el)
+  if (id) {
+    clearInterval(id)
+    watchers.delete(el)
+  }
 }
 
 export function unlockAllMedia() {
-  if (unlocked) return
-  unlocked = true
-  pool.forEach((v) => {
-    primeVideo(v)
-    v.play().catch(() => {})
-  })
+  pool.forEach((v) => tryPlay(v))
 }
 
-/** First scroll / tap unlocks muted autoplay in Safari (required after pause or off-screen). */
-export function useMediaUnlock() {
-  useEffect(() => {
-    const unlock = () => unlockAllMedia()
-
-    const opts: AddEventListenerOptions = { capture: true, passive: true }
-    const events: (keyof WindowEventMap)[] = [
-      'touchstart',
-      'touchend',
-      'click',
-      'wheel',
-      'scroll',
-      'keydown',
-    ]
-
-    events.forEach((e) => window.addEventListener(e, unlock, opts))
-    return () => events.forEach((e) => window.removeEventListener(e, unlock, opts))
-  }, [])
+export function initMediaUnlock() {
+  const unlock = () => unlockAllMedia()
+  const opts: AddEventListenerOptions = { capture: true, passive: true }
+  const events: (keyof WindowEventMap)[] = [
+    'pointerdown',
+    'touchstart',
+    'click',
+    'keydown',
+    'wheel',
+    'scroll',
+  ]
+  events.forEach((e) => window.addEventListener(e, unlock, opts))
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) unlockAllMedia()
+  })
+  return () => events.forEach((e) => window.removeEventListener(e, unlock, opts))
 }

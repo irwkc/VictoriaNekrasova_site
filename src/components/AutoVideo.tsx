@@ -1,26 +1,33 @@
-import { useEffect, useRef, type Ref, type VideoHTMLAttributes } from 'react'
-import { primeVideo, registerVideo, unregisterVideo } from '../lib/unlockMedia'
+import { useLayoutEffect, useRef, type Ref } from 'react'
+import { primeVideo, registerVideo, unregisterVideo, tryPlay } from '../lib/unlockMedia'
 
-type Props = Omit<VideoHTMLAttributes<HTMLVideoElement>, 'ref'> & {
+type Props = {
+  src: string
+  className?: string
   ref?: Ref<HTMLVideoElement>
+  onTimeUpdate?: React.ReactEventHandler<HTMLVideoElement>
 }
 
-export default function AutoVideo({ ref, src, className, onTimeUpdate, ...rest }: Props) {
+export default function AutoVideo({ ref, src, className, onTimeUpdate }: Props) {
   const inner = useRef<HTMLVideoElement | null>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = inner.current
     if (!el) return
+    const cleanupWatch = registerVideo(el)
 
-    registerVideo(el)
-
-    const retry = () => el.play().catch(() => {})
-    el.addEventListener('loadeddata', retry)
-    el.addEventListener('canplay', retry)
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[entries.length - 1]?.isIntersecting) tryPlay(el)
+      },
+      { threshold: 0.15, rootMargin: '80px' },
+    )
+    io.observe(el)
+    tryPlay(el)
 
     return () => {
-      el.removeEventListener('loadeddata', retry)
-      el.removeEventListener('canplay', retry)
+      io.disconnect()
+      cleanupWatch?.()
       unregisterVideo(el)
     }
   }, [src])
@@ -34,17 +41,15 @@ export default function AutoVideo({ ref, src, className, onTimeUpdate, ...rest }
         else if (ref) ref.current = el
       }}
       src={src}
-      className={className}
+      className={`ambient-video ${className ?? ''}`}
       onTimeUpdate={onTimeUpdate}
       muted
-      defaultMuted
       playsInline
       autoPlay
       loop
       preload="auto"
-      controls={false}
-      disablePictureInPicture
-      {...rest}
+      tabIndex={-1}
+      aria-hidden
     />
   )
 }

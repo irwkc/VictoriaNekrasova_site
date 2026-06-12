@@ -97,3 +97,27 @@ a, button {
   .animate-marquee { animation: none; }
   .grain::after { animation: none; }
 }
+
+/* ambient video — no native controls, not clickable */
+.ambient-video {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  object-fit: cover;
+}
+
+.ambient-video::-webkit-media-controls {
+  display: none !important;
+}
+
+.ambient-video::-webkit-media-controls-enclosure {
+  display: none !important;
+}
+
+.ambient-video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+}
+
+.ambient-video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+}

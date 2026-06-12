@@ -66,7 +66,7 @@ export default function Storyboard() {
 
       {/* main reel */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="relative h-[72vh] md:h-[78vh] aspect-[9/16]">
+        <div className="relative h-[72vh] md:h-[78vh] aspect-[9/16] pointer-events-none select-none">
           <AutoVideo
             ref={video}
             src="/videos/projector.mp4"
