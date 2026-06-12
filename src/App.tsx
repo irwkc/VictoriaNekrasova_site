@@ -15,6 +15,11 @@ export default function App() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
+    // Safari: native scroll is smooth already, and Lenis' main-thread
+    // smoothing fights its compositor — skip it there.
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+    if (isSafari) return
+
     const lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 0.9 })
     let raf = 0
     const tick = (time: number) => {

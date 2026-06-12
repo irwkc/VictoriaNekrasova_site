@@ -5,7 +5,10 @@ export function useInViewport(ref: RefObject<Element | null>, rootMargin = '100p
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { rootMargin })
+    const io = new IntersectionObserver(
+      (entries) => setInView(entries[entries.length - 1].isIntersecting),
+      { rootMargin },
+    )
     io.observe(el)
     return () => io.disconnect()
   }, [ref, rootMargin])

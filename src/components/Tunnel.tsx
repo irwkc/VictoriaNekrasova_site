@@ -105,7 +105,7 @@ function Dust() {
 export default function Tunnel() {
   const section = useRef<HTMLElement>(null)
   const progress = useSectionProgress(section)
-  const p = useSectionProgressState(section, 100)
+  const pct = useSectionProgressState(section, 200) * 100
   const inView = useInViewport(section)
 
   return (
@@ -130,13 +130,13 @@ export default function Tunnel() {
           ( ARCHIVE FLY-THROUGH )
         </div>
         <div className="absolute top-24 right-5 md:right-10 font-mono text-[10px] tracking-[0.3em] text-bone/60 tabular-nums pointer-events-none">
-          DEPTH {String(Math.round(p))}%
+          DEPTH {String(Math.round(pct))}%
         </div>
 
         {/* intro / outro titles */}
         <div
           className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500"
-          style={{ opacity: p < 6 ? 1 : 0 }}
+          style={{ opacity: pct < 6 ? 1 : 0 }}
         >
           <h2 className="font-display text-[10vw] leading-[0.85] text-center text-bone [text-shadow:0_4px_60px_rgba(10,10,10,0.6)]">
             WALK
@@ -146,7 +146,7 @@ export default function Tunnel() {
         </div>
         <div
           className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500"
-          style={{ opacity: p > 94 ? 1 : 0 }}
+          style={{ opacity: pct > 94 ? 1 : 0 }}
         >
           <h2 className="font-serif italic text-[6vw] text-blood text-center">
             …and she keeps walking
@@ -154,7 +154,7 @@ export default function Tunnel() {
         </div>
 
         <div className="absolute bottom-6 inset-x-5 md:inset-x-10 h-px bg-bone/15">
-          <div className="h-full bg-blood" style={{ width: `${p}%` }} />
+          <div className="h-full bg-blood" style={{ width: `${pct}%` }} />
         </div>
       </div>
     </section>

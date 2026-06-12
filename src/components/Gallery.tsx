@@ -24,7 +24,7 @@ export default function Gallery() {
         <div className="hidden md:block font-mono text-[10px] tracking-[0.35em] text-bone/50 text-right leading-relaxed">
           09 FRAMES / PAUSED MOTION
           <br />
-          HOVER TO UNBLUR
+          HOVER TO REVEAL
         </div>
       </div>
 
@@ -43,7 +43,7 @@ export default function Gallery() {
               src={item.src}
               alt={item.cap}
               loading="lazy"
-              className="w-full h-full object-cover grayscale blur-[2px] scale-[1.04] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:blur-0 group-hover:scale-100"
+              className="w-full h-full object-cover grayscale scale-[1.04] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-100"
             />
             <figcaption className="absolute bottom-0 inset-x-0 flex items-center justify-between px-3 py-2 bg-gradient-to-t from-ink/80 to-transparent font-mono text-[9px] tracking-[0.25em] text-bone/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <span>{item.cap}</span>
