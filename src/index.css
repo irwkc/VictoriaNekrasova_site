@@ -13,6 +13,7 @@
 
 html {
   background: var(--color-ink);
+  overflow-x: clip;
 }
 
 html.lenis,
@@ -27,7 +28,6 @@ html.lenis body {
 body {
   font-family: var(--font-sans);
   color: var(--color-bone);
-  overflow-x: hidden;
   cursor: none;
 }
 

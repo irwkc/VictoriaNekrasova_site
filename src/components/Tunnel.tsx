@@ -1,7 +1,7 @@
 import { Suspense, useMemo, useRef } from 'react'
 import { Canvas, useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
-import { useSectionProgress, useSectionProgressState } from '../lib/useSectionProgress'
+import { useScrollPin } from '../lib/useScrollPin'
 
 const PHOTOS = [
   '/photos/dapple2.jpg',
@@ -103,12 +103,32 @@ function Dust() {
 
 export default function Tunnel() {
   const section = useRef<HTMLElement>(null)
-  const progress = useSectionProgress(section)
-  const pct = useSectionProgressState(section, 200) * 100
+  const { progress, phase, progressUi, layout } = useScrollPin(section, 3.8)
+  const pct = progressUi * 100
+
+  const pinStyle: React.CSSProperties =
+    phase === 'pinned'
+      ? {
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          width: '100%',
+          height: layout.vh,
+          zIndex: 20,
+        }
+      : phase === 'after'
+        ? { position: 'absolute', bottom: 0, left: 0, right: 0, width: '100%', height: layout.vh }
+        : { position: 'relative', width: '100%', height: layout.vh }
 
   return (
-    <section ref={section} id="archive" className="relative h-[480vh] bg-ink">
-      <div className="sticky top-0 h-screen overflow-hidden">
+    <section
+      ref={section}
+      id="archive"
+      className="relative bg-ink"
+      style={{ height: layout.sectionH }}
+    >
+      <div className="overflow-hidden" style={pinStyle}>
         <Canvas
           className="!absolute inset-0"
           dpr={[1, 1.5]}
@@ -123,7 +143,6 @@ export default function Tunnel() {
           </Suspense>
         </Canvas>
 
-        {/* HUD */}
         <div className="absolute top-24 left-5 md:left-10 font-mono text-[10px] tracking-[0.35em] text-bone/60 pointer-events-none">
           ( ARCHIVE FLY-THROUGH )
         </div>
@@ -131,7 +150,6 @@ export default function Tunnel() {
           DEPTH {String(Math.round(pct))}%
         </div>
 
-        {/* intro / outro titles */}
         <div
           className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500"
           style={{ opacity: pct < 6 ? 1 : 0 }}
