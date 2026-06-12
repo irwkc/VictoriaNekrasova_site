@@ -2,6 +2,7 @@ import { useMemo, useRef } from 'react'
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { motion } from 'motion/react'
+import { useInViewport } from '../lib/useInViewport'
 
 const vertex = /* glsl */ `
   varying vec2 vUv;
@@ -123,11 +124,14 @@ const fade = {
 }
 
 export default function Hero() {
+  const section = useRef<HTMLElement>(null)
+  const inView = useInViewport(section)
   return (
-    <section id="top" className="relative h-[100svh] overflow-hidden">
+    <section ref={section} id="top" className="relative h-[100svh] overflow-hidden">
       <Canvas
         className="!absolute inset-0"
-        dpr={[1, 2]}
+        dpr={[1, 1.5]}
+        frameloop={inView ? 'always' : 'never'}
         gl={{ antialias: false, powerPreference: 'high-performance' }}
         camera={{ position: [0, 0, 1] }}
       >
@@ -147,7 +151,7 @@ export default function Hero() {
         <motion.h1
           {...fade}
           transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="font-display leading-[0.82] text-center text-bone mix-blend-difference select-none"
+          className="font-display leading-[0.82] text-center text-bone select-none [text-shadow:0_4px_60px_rgba(10,10,10,0.55)]"
         >
           <span className="block text-[16.5vw]">VICTORIA</span>
           <span className="block text-[16.5vw] outline-text">NEKRASOVA</span>

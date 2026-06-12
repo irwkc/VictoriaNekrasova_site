@@ -2,6 +2,7 @@ import { Suspense, useMemo, useRef } from 'react'
 import { Canvas, useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useSectionProgress, useSectionProgressState } from '../lib/useSectionProgress'
+import { useInViewport } from '../lib/useInViewport'
 
 const PHOTOS = [
   '/photos/dapple2.jpg',
@@ -105,13 +106,15 @@ export default function Tunnel() {
   const section = useRef<HTMLElement>(null)
   const progress = useSectionProgress(section)
   const p = useSectionProgressState(section, 100)
+  const inView = useInViewport(section)
 
   return (
     <section ref={section} id="archive" className="relative h-[480vh] bg-ink">
       <div className="sticky top-0 h-screen overflow-hidden">
         <Canvas
           className="!absolute inset-0"
-          dpr={[1, 2]}
+          dpr={[1, 1.5]}
+          frameloop={inView ? 'always' : 'never'}
           camera={{ fov: 62, position: [0, 0, 5], near: 0.1, far: 60 }}
           gl={{ powerPreference: 'high-performance' }}
         >
@@ -135,7 +138,7 @@ export default function Tunnel() {
           className="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-500"
           style={{ opacity: p < 6 ? 1 : 0 }}
         >
-          <h2 className="font-display text-[10vw] leading-[0.85] text-center text-bone mix-blend-difference">
+          <h2 className="font-display text-[10vw] leading-[0.85] text-center text-bone [text-shadow:0_4px_60px_rgba(10,10,10,0.6)]">
             WALK
             <br />
             <span className="outline-text">THE ARCHIVE</span>

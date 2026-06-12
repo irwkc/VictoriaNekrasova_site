@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
+import AutoVideo from './AutoVideo'
 
 const CHAPTERS = [
   {
@@ -38,7 +39,6 @@ function chapterIndex(p: number) {
 
 export default function Storyboard() {
   const video = useRef<HTMLVideoElement>(null)
-  const bgVideo = useRef<HTMLVideoElement>(null)
   const [progress, setProgress] = useState(0)
 
   const onTime = () => {
@@ -55,28 +55,21 @@ export default function Storyboard() {
 
   return (
     <section id="sequence" className="relative h-screen bg-ink overflow-hidden">
-      {/* blurred backdrop */}
-      <video
-        ref={bgVideo}
-        src="/videos/projector.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover scale-125 blur-[50px] opacity-40"
+      {/* pre-blurred backdrop (cheap for Safari) */}
+      <img
+        src="/photos/seq_bg.jpg"
+        alt=""
+        aria-hidden
+        className="absolute inset-0 w-full h-full object-cover opacity-40 select-none"
       />
       <div className="absolute inset-0 bg-ink/30" />
 
       {/* main reel */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative h-[72vh] md:h-[78vh] aspect-[9/16]">
-          <video
+          <AutoVideo
             ref={video}
             src="/videos/projector.mp4"
-            autoPlay
-            muted
-            loop
-            playsInline
             onTimeUpdate={onTime}
             className="w-full h-full object-cover"
           />

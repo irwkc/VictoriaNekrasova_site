@@ -1,4 +1,5 @@
 import { motion } from 'motion/react'
+import AutoVideo from './AutoVideo'
 
 export default function Editorial() {
   return (
@@ -54,14 +55,7 @@ function FaceReel() {
 
         {/* source reel */}
         <div className="relative h-[64vh] md:h-[74vh] aspect-[3/4] shadow-[0_40px_120px_rgba(10,10,10,0.35)]">
-          <video
-            src="/videos/face.mp4"
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-cover"
-          />
+          <AutoVideo src="/videos/face.mp4" className="w-full h-full object-cover" />
           <span className="absolute -left-2 top-6 -translate-x-full font-mono text-[9px] tracking-[0.3em] text-ink/60 [writing-mode:vertical-rl]">
             PARK BY OSIPCHUK — ORIGINAL REEL
           </span>
