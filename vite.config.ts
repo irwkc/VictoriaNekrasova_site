@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import fs from 'node:fs'
 import path from 'node:path'
+import { spawnSync } from 'node:child_process'
 
 const SKIP_PHOTOS = new Set(['face_cut.png', 'seq_bg.jpg'])
 
@@ -44,7 +45,11 @@ function siteApi(): Plugin {
               }
               const ext = path.extname(name).toLowerCase() || '.jpg'
               const safe = `upload-${Date.now()}${ext.replace(/[^a-z0-9.]/gi, '')}`
-              fs.writeFileSync(path.join(photosDir(), safe), Buffer.from(data, 'base64'))
+              const filePath = path.join(photosDir(), safe)
+              fs.writeFileSync(filePath, Buffer.from(data, 'base64'))
+              spawnSync('python3', [path.resolve(root, 'scripts/trim-photos.py'), filePath], {
+                stdio: 'ignore',
+              })
               res.setHeader('Content-Type', 'application/json')
               res.end(JSON.stringify({ url: `/photos/${safe}` }))
             } catch {

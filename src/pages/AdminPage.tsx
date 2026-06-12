@@ -4,6 +4,7 @@ import {
   ADMIN_PASSWORD,
   DEFAULT_CONTENT,
   GALLERY_SPANS,
+  defaultGalleryItem,
   downloadContent,
   resetContent,
   saveContent,
@@ -12,6 +13,8 @@ import {
   type SiteContent,
 } from '../lib/content'
 import PhotoPicker from '../components/admin/PhotoPicker'
+import AdminDialog, { type AdminDialogConfig } from '../components/admin/AdminDialog'
+import PolaroidFrame from '../components/PolaroidFrame'
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem('vn-admin') === '1')
@@ -20,6 +23,19 @@ export default function AdminPage() {
   const [picker, setPicker] = useState<{ type: 'corridor'; index: number } | { type: 'gallery'; index: number } | null>(
     null,
   )
+  const [dialog, setDialog] = useState<(AdminDialogConfig & { open: true }) | null>(null)
+
+  const closeDialog = () => setDialog(null)
+
+  const showAlert = (title: string, message: string) => {
+    setDialog({
+      open: true,
+      title,
+      message,
+      alert: true,
+      onConfirm: closeDialog,
+    })
+  }
 
   useEffect(() => {
     document.body.classList.add('admin-route')
@@ -45,16 +61,53 @@ export default function AdminPage() {
     if (patch.src !== undefined) setPicker(null)
   }
 
+  const addGallery = () => {
+    const gallery = [...draft.gallery, defaultGalleryItem()]
+    setDraft({ ...draft, gallery })
+    setSaved(false)
+    setPicker({ type: 'gallery', index: gallery.length - 1 })
+  }
+
+  const removeGallery = (index: number) => {
+    if (draft.gallery.length <= 1) {
+      showAlert('CANNOT REMOVE', 'Selected Stills needs at least one frame.')
+      return
+    }
+    setDialog({
+      open: true,
+      title: 'REMOVE FRAME',
+      message: `Remove frame ${String(index + 1).padStart(2, '0')} from Selected Stills? This cannot be undone until you save.`,
+      variant: 'danger',
+      confirmLabel: 'REMOVE',
+      onConfirm: () => {
+        const gallery = draft.gallery.filter((_, i) => i !== index)
+        setDraft({ ...draft, gallery })
+        setSaved(false)
+        setPicker(null)
+        closeDialog()
+      },
+    })
+  }
+
   const handleSave = async () => {
     await saveContent(draft)
     setSaved(true)
   }
 
   const handleReset = () => {
-    if (!confirm('Сбросить к дефолту?')) return
-    resetContent()
-    setDraft({ ...DEFAULT_CONTENT })
-    setSaved(false)
+    setDialog({
+      open: true,
+      title: 'RESET CONTENT',
+      message: 'Сбросить все изменения к дефолту? Несохранённые правки будут потеряны.',
+      variant: 'danger',
+      confirmLabel: 'RESET',
+      onConfirm: () => {
+        resetContent()
+        setDraft({ ...DEFAULT_CONTENT })
+        setSaved(false)
+        closeDialog()
+      },
+    })
   }
 
   return (
@@ -82,7 +135,7 @@ export default function AdminPage() {
       <div className="px-5 md:px-10 py-12 max-w-6xl mx-auto space-y-16">
         <section>
           <SectionTitle n="01" title="CORRIDOR" sub="12 frames in the 3D fly-through" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-8">
             {draft.corridor.map((src, i) => (
               <Slot
                 key={i}
@@ -95,7 +148,12 @@ export default function AdminPage() {
         </section>
 
         <section>
-          <SectionTitle n="02" title="SELECTED STILLS" sub="Gallery grid on the main page" />
+          <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+            <SectionTitle n="02" title="SELECTED STILLS" sub="Gallery grid on the main page" />
+            <button type="button" onClick={addGallery} className={btnPrimary}>
+              + ADD FRAME
+            </button>
+          </div>
           <div className="space-y-4">
             {draft.gallery.map((item, i) => (
               <div
@@ -105,13 +163,22 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={() => setPicker({ type: 'gallery', index: i })}
-                  className="shrink-0 w-full sm:w-28 aspect-[3/4] overflow-hidden border border-bone/20 hover:border-blood transition-colors"
+                  className="shrink-0 w-full sm:w-28 aspect-[88/107] hover:opacity-90 transition-opacity"
                 >
-                  <img src={item.src} alt="" className="w-full h-full object-cover" />
+                  <PolaroidFrame src={item.src} alt={item.cap} flat className="h-full w-full" />
                 </button>
                 <div className="flex-1 space-y-3">
-                  <div className="font-mono text-[10px] tracking-[0.3em] text-bone/40">
-                    FRAME {String(i + 1).padStart(2, '0')}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="font-mono text-[10px] tracking-[0.3em] text-bone/40">
+                      FRAME {String(i + 1).padStart(2, '0')}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeGallery(i)}
+                      className="font-mono text-[9px] tracking-[0.2em] text-bone/35 hover:text-blood transition-colors"
+                    >
+                      REMOVE
+                    </button>
                   </div>
                   <label className="block">
                     <span className="font-mono text-[9px] tracking-[0.25em] text-bone/50">CAPTION</span>
@@ -153,7 +220,12 @@ export default function AdminPage() {
             else setGallery(picker.index, { src })
           }}
           onClose={() => setPicker(null)}
+          onError={(message) => showAlert('UPLOAD FAILED', message)}
         />
+      )}
+
+      {dialog && (
+        <AdminDialog {...dialog} onCancel={closeDialog} />
       )}
     </div>
   )
@@ -219,7 +291,7 @@ function Login({ onOk }: { onOk: () => void }) {
 
 function SectionTitle({ n, title, sub }: { n: string; title: string; sub: string }) {
   return (
-    <div className="mb-8">
+    <div>
       <div className="font-display text-5xl text-blood leading-none">{n}</div>
       <h1 className="font-display text-2xl tracking-wide mt-2">{title}</h1>
       <p className="font-mono text-[10px] tracking-[0.25em] text-bone/40 mt-2">{sub}</p>

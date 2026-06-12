@@ -6,9 +6,10 @@ type Props = {
   current: string
   onPick: (src: string) => void
   onClose: () => void
+  onError?: (message: string) => void
 }
 
-export default function PhotoPicker({ current, onPick, onClose }: Props) {
+export default function PhotoPicker({ current, onPick, onClose, onError }: Props) {
   const [photos, setPhotos] = useState<string[]>([])
   const [hover, setHover] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -27,7 +28,7 @@ export default function PhotoPicker({ current, onPick, onClose }: Props) {
       setPhotos((p) => (p.includes(url) ? p : [url, ...p]))
       onPick(url)
     } catch {
-      alert('Upload failed — run via npm run dev to save files locally')
+      onError?.('Run via npm run dev to save uploaded files locally.')
     } finally {
       setUploading(false)
     }

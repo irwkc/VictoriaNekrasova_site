@@ -1,4 +1,5 @@
 import { motion } from 'motion/react'
+import PolaroidFrame from './PolaroidFrame'
 import { useContent } from '../context/ContentProvider'
 
 export default function Gallery() {
@@ -20,7 +21,7 @@ export default function Gallery() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-12 gap-3 md:gap-4 auto-rows-[40vw] md:auto-rows-[26vw]">
+      <div className="grid grid-cols-2 md:grid-cols-12 gap-4 md:gap-5 auto-rows-[46vw] md:auto-rows-[28vw]">
         {items.map((item, i) => (
           <motion.figure
             key={`${item.src}-${i}`}
@@ -28,19 +29,20 @@ export default function Gallery() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-8%' }}
             transition={{ duration: 0.6, delay: (i % 3) * 0.08, ease: [0.22, 1, 0.36, 1] }}
-            className={`group relative overflow-hidden ${item.span}`}
+            className={`group relative flex items-center justify-center ${item.span}`}
             data-hover
           >
-            <img
+            <PolaroidFrame
               src={item.src}
               alt={item.cap}
-              loading="lazy"
-              className="w-full h-full object-cover grayscale scale-[1.04] transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:scale-100"
+              index={i}
+              caption={
+                <>
+                  <span>{item.cap}</span>
+                  <span className="text-blood">{String(i + 1).padStart(2, '0')}</span>
+                </>
+              }
             />
-            <figcaption className="absolute bottom-0 inset-x-0 flex items-center justify-between px-3 py-2 bg-gradient-to-t from-ink/80 to-transparent font-mono text-[9px] tracking-[0.25em] text-bone/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <span>{item.cap}</span>
-              <span className="text-blood">{String(i + 1).padStart(2, '0')}</span>
-            </figcaption>
           </motion.figure>
         ))}
       </div>

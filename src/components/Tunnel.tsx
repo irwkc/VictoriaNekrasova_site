@@ -2,11 +2,11 @@ import { Suspense, useMemo, useRef } from 'react'
 import { Canvas, useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useScrollPin } from '../lib/useScrollPin'
+import { containSize, polaroidInner } from '../lib/polaroid'
+import PolaroidCard3D from './PolaroidCard3D'
 import { useContent } from '../context/ContentProvider'
-import { applyCoverTexture, CORRIDOR_PLANE } from '../lib/textureCover'
 
 const GAP = 7
-const { w: PLANE_W, h: PLANE_H } = CORRIDOR_PLANE
 
 function Corridor({ progress, photos }: { progress: React.RefObject<number>; photos: string[] }) {
   const textures = useLoader(THREE.TextureLoader, photos)
@@ -17,11 +17,18 @@ function Corridor({ progress, photos }: { progress: React.RefObject<number>; pho
     () =>
       textures.map((tex, i) => {
         tex.colorSpace = THREE.SRGBColorSpace
-        applyCoverTexture(tex, tex.image.width, tex.image.height, PLANE_W, PLANE_H)
+        const inner = polaroidInner()
+        const { w: photoW, h: photoH } = containSize(
+          tex.image.width,
+          tex.image.height,
+          inner.w,
+          inner.h,
+        )
         return {
           tex,
-          w: PLANE_W,
-          h: PLANE_H,
+          photoW,
+          photoH,
+          innerCenterY: inner.centerY,
           x: (i % 2 === 0 ? -1 : 1) * (1.9 + (i % 3) * 0.35),
           y: ((i * 37) % 100) / 100 - 0.5,
           z: -i * GAP,
@@ -43,10 +50,15 @@ function Corridor({ progress, photos }: { progress: React.RefObject<number>; pho
   return (
     <group ref={group}>
       {planes.map((pl, i) => (
-        <mesh key={i} position={[pl.x, pl.y, pl.z]} rotation={[0, pl.ry, 0]}>
-          <planeGeometry args={[pl.w, pl.h]} />
-          <meshBasicMaterial map={pl.tex} toneMapped={false} />
-        </mesh>
+        <group key={i} position={[pl.x, pl.y, pl.z]} rotation={[0, pl.ry, 0]}>
+          <PolaroidCard3D
+            photoTex={pl.tex}
+            seed={i * 17 + 3}
+            photoW={pl.photoW}
+            photoH={pl.photoH}
+            innerCenterY={pl.innerCenterY}
+          />
+        </group>
       ))}
       <Dust count={photos.length} />
     </group>

@@ -58,6 +58,10 @@ export const GALLERY_SPANS = [
   'md:col-span-6 md:row-span-2',
 ] as const
 
+export function defaultGalleryItem(src = PHOTO_LIBRARY[0]): GalleryItem {
+  return { src, cap: 'UNTITLED', span: 'md:col-span-4' }
+}
+
 const STORAGE_KEY = 'vn-site-content'
 
 export const DEFAULT_CONTENT: SiteContent = {
