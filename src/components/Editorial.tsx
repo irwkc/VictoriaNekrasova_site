@@ -1,13 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
-import { faceFrame, FACE_COUNT, frameCache, preloadFrames } from '../lib/frames'
-import { useSectionProgress } from '../lib/useSectionProgress'
 
 export default function Editorial() {
   return (
     <section id="editorial" className="bg-bone text-ink">
       <Manifesto />
-      <FaceScrub />
+      <FaceReel />
     </section>
   )
 }
@@ -41,35 +38,10 @@ function Manifesto() {
   )
 }
 
-function FaceScrub() {
-  const section = useRef<HTMLDivElement>(null)
-  const canvas = useRef<HTMLCanvasElement>(null)
-  const [frame, setFrame] = useState(0)
-
-  useEffect(() => {
-    if (!frameCache.face) {
-      const urls = Array.from({ length: FACE_COUNT }, (_, i) => faceFrame(i))
-      preloadFrames(urls).then((imgs) => {
-        frameCache.face = imgs
-      })
-    }
-  }, [])
-
-  useSectionProgress(section, (p) => {
-    const imgs = frameCache.face
-    if (!imgs) return
-    const idx = Math.min(imgs.length - 1, Math.floor(p * imgs.length))
-    setFrame(idx)
-    const img = imgs[idx]
-    const c = canvas.current
-    if (img?.naturalWidth && c) {
-      c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height)
-    }
-  })
-
+function FaceReel() {
   return (
-    <div ref={section} className="relative h-[320vh]">
-      <div className="sticky top-0 h-screen overflow-hidden flex items-center justify-center">
+    <div className="relative">
+      <div className="relative h-screen overflow-hidden flex items-center justify-center">
         {/* poster type behind */}
         <div className="absolute inset-0 flex flex-col items-center justify-center select-none pointer-events-none">
           <span className="font-display text-[24vw] leading-[0.8] text-ink/90 -translate-x-[14vw]">
@@ -80,14 +52,21 @@ function FaceScrub() {
           </span>
         </div>
 
-        {/* scrubbed face */}
+        {/* source reel */}
         <div className="relative h-[64vh] md:h-[74vh] aspect-[3/4] shadow-[0_40px_120px_rgba(10,10,10,0.35)]">
-          <canvas ref={canvas} width={720} height={960} className="w-full h-full object-cover" />
+          <video
+            src="/videos/face.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover"
+          />
           <span className="absolute -left-2 top-6 -translate-x-full font-mono text-[9px] tracking-[0.3em] text-ink/60 [writing-mode:vertical-rl]">
-            PARK BY OSIPCHUK — 16 FPS SCRUB
+            PARK BY OSIPCHUK — ORIGINAL REEL
           </span>
           <span className="absolute -right-2 bottom-6 translate-x-full font-mono text-[9px] tracking-[0.3em] text-ink/60 [writing-mode:vertical-rl]">
-            FRAME {String(frame + 1).padStart(3, '0')} / {FACE_COUNT}
+            LOOP — 7.2 SEC
           </span>
         </div>
 

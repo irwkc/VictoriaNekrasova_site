@@ -1,15 +1,4 @@
-export const frameCache: Record<string, HTMLImageElement[]> = {}
-
-export const PROJECTOR_COUNT = 140
-export const FACE_COUNT = 116
-
-export const projectorFrame = (i: number) =>
-  `/frames/projector/${String(i + 1).padStart(4, '0')}.jpg`
-
-export const faceFrame = (i: number) =>
-  `/frames/face/${String(i + 1).padStart(4, '0')}.jpg`
-
-export function preloadFrames(
+export function preloadImages(
   urls: string[],
   onProgress?: (loaded: number, total: number) => void,
 ): Promise<HTMLImageElement[]> {
@@ -29,23 +18,4 @@ export function preloadFrames(
         }),
     ),
   )
-}
-
-/** Draw an image into a canvas with object-fit: cover. */
-export function drawCover(
-  ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement,
-  w: number,
-  h: number,
-) {
-  const ia = img.naturalWidth / img.naturalHeight
-  const ca = w / h
-  let dw = w
-  let dh = h
-  if (ia > ca) {
-    dw = h * ia
-  } else {
-    dh = w / ia
-  }
-  ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh)
 }

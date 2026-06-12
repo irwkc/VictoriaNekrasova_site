@@ -134,6 +134,14 @@ export default function Hero() {
         <HeroPlane />
       </Canvas>
 
+      {/* face cutout — static layer, untouched by the cursor effect */}
+      <img
+        src="/photos/face_cut.png"
+        alt="Victoria Nekrasova"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+        draggable={false}
+      />
+
       {/* type overlay */}
       <div className="absolute inset-0 flex flex-col justify-end pb-10 md:pb-14 pointer-events-none">
         <motion.h1

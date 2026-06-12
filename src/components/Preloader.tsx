@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { frameCache, preloadFrames, projectorFrame, PROJECTOR_COUNT } from '../lib/frames'
+import { preloadImages } from '../lib/frames'
+
+const ASSETS = ['/photos/dapple1.jpg', '/photos/face_cut.png']
+const MIN_DURATION = 1400
 
 export default function Preloader({ onDone }: { onDone: () => void }) {
   const [pct, setPct] = useState(0)
@@ -8,17 +11,31 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
 
   useEffect(() => {
     let alive = true
-    const urls = Array.from({ length: PROJECTOR_COUNT }, (_, i) => projectorFrame(i))
-    preloadFrames(['/photos/dapple1.jpg', ...urls], (loaded, total) => {
-      if (alive) setPct(Math.round((loaded / total) * 100))
-    }).then((imgs) => {
+    const start = performance.now()
+    let real = 0
+
+    // tween the counter to 100 over MIN_DURATION while assets load
+    const raf = setInterval(() => {
       if (!alive) return
-      frameCache.projector = imgs.slice(1)
+      const timed = Math.min(1, (performance.now() - start) / MIN_DURATION)
+      setPct(Math.round(Math.min(timed, Math.max(timed * 0.7, real)) * 100))
+    }, 40)
+
+    const delay = new Promise((r) => setTimeout(r, MIN_DURATION))
+    const load = preloadImages(ASSETS, (loaded, total) => {
+      real = loaded / total
+    })
+
+    Promise.all([load, delay]).then(() => {
+      if (!alive) return
+      clearInterval(raf)
+      setPct(100)
       setLeaving(true)
       setTimeout(onDone, 900)
     })
     return () => {
       alive = false
+      clearInterval(raf)
     }
   }, [onDone])
 
