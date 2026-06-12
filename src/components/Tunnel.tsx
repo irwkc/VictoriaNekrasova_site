@@ -3,8 +3,10 @@ import { Canvas, useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useScrollPin } from '../lib/useScrollPin'
 import { useContent } from '../context/ContentProvider'
+import { applyCoverTexture, CORRIDOR_PLANE } from '../lib/textureCover'
 
 const GAP = 7
+const { w: PLANE_W, h: PLANE_H } = CORRIDOR_PLANE
 
 function Corridor({ progress, photos }: { progress: React.RefObject<number>; photos: string[] }) {
   const textures = useLoader(THREE.TextureLoader, photos)
@@ -15,12 +17,11 @@ function Corridor({ progress, photos }: { progress: React.RefObject<number>; pho
     () =>
       textures.map((tex, i) => {
         tex.colorSpace = THREE.SRGBColorSpace
-        const aspect = tex.image.width / tex.image.height
-        const h = 3.4
+        applyCoverTexture(tex, tex.image.width, tex.image.height, PLANE_W, PLANE_H)
         return {
           tex,
-          w: h * aspect,
-          h,
+          w: PLANE_W,
+          h: PLANE_H,
           x: (i % 2 === 0 ? -1 : 1) * (1.9 + (i % 3) * 0.35),
           y: ((i * 37) % 100) / 100 - 0.5,
           z: -i * GAP,

@@ -4,7 +4,6 @@ import {
   ADMIN_PASSWORD,
   DEFAULT_CONTENT,
   GALLERY_SPANS,
-  PHOTO_LIBRARY,
   downloadContent,
   resetContent,
   saveContent,
@@ -12,6 +11,7 @@ import {
   type GalleryItem,
   type SiteContent,
 } from '../lib/content'
+import PhotoPicker from '../components/admin/PhotoPicker'
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(() => sessionStorage.getItem('vn-admin') === '1')
@@ -210,10 +210,7 @@ function Login({ onOk }: { onOk: () => void }) {
           ENTER ADMIN
         </button>
       </form>
-      <p className="mt-6 font-mono text-[9px] tracking-[0.2em] text-bone/30">
-        trial password: admin
-      </p>
-      <Link to="/" className="mt-4 font-mono text-[10px] tracking-[0.3em] text-bone/40 hover:text-bone">
+      <Link to="/" className="mt-8 font-mono text-[10px] tracking-[0.3em] text-bone/40 hover:text-bone">
         ← BACK TO SITE
       </Link>
     </div>
@@ -245,49 +242,6 @@ function Slot({ label, src, onClick }: { label: string; src: string; onClick: ()
         CHANGE
       </span>
     </button>
-  )
-}
-
-function PhotoPicker({
-  current,
-  onPick,
-  onClose,
-}: {
-  current: string
-  onPick: (src: string) => void
-  onClose: () => void
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 bg-ink/90 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-ink border border-bone/15 w-full max-w-3xl max-h-[80vh] overflow-hidden flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-bone/10">
-          <span className="font-mono text-[10px] tracking-[0.35em] text-bone/50">PICK PHOTO</span>
-          <button type="button" onClick={onClose} className="font-mono text-xs text-bone/60 hover:text-bone">
-            ✕
-          </button>
-        </div>
-        <div className="overflow-y-auto p-4 grid grid-cols-3 sm:grid-cols-4 gap-2">
-          {PHOTO_LIBRARY.map((src) => (
-            <button
-              key={src}
-              type="button"
-              onClick={() => onPick(src)}
-              className={`aspect-[3/4] overflow-hidden border-2 transition-colors cursor-pointer ${
-                src === current ? 'border-blood' : 'border-transparent hover:border-bone/40'
-              }`}
-            >
-              <img src={src} alt="" className="w-full h-full object-cover" />
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
   )
 }
 

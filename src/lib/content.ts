@@ -148,3 +148,32 @@ export function downloadContent(data: SiteContent) {
 }
 
 export const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD ?? 'admin'
+
+export async function fetchPhotoLibrary(): Promise<string[]> {
+  try {
+    const res = await fetch('/api/photos')
+    if (res.ok) {
+      const list = (await res.json()) as string[]
+      if (list.length) return list
+    }
+  } catch {
+    /* static host */
+  }
+  return [...PHOTO_LIBRARY]
+}
+
+export async function uploadPhoto(file: File): Promise<string> {
+  const buf = new Uint8Array(await file.arrayBuffer())
+  let binary = ''
+  for (let i = 0; i < buf.length; i++) binary += String.fromCharCode(buf[i]!)
+  const data = btoa(binary)
+
+  const res = await fetch('/api/upload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: file.name, data }),
+  })
+  if (!res.ok) throw new Error('upload failed')
+  const { url } = (await res.json()) as { url: string }
+  return url
+}
