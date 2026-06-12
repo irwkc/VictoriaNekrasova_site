@@ -1,5 +1,11 @@
 import { useLayoutEffect, useRef, type Ref } from 'react'
-import { primeVideo, registerVideo, unregisterVideo, tryPlay } from '../lib/unlockMedia'
+import {
+  isMediaUnlocked,
+  primeVideo,
+  registerVideo,
+  unregisterVideo,
+  tryPlay,
+} from '../lib/unlockMedia'
 
 type Props = {
   src: string
@@ -18,16 +24,15 @@ export default function AutoVideo({ ref, src, className, onTimeUpdate }: Props) 
 
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries[entries.length - 1]?.isIntersecting) tryPlay(el)
+        if (entries[entries.length - 1]?.isIntersecting && isMediaUnlocked()) tryPlay(el)
       },
-      { threshold: 0.15, rootMargin: '80px' },
+      { threshold: 0.1, rootMargin: '100px' },
     )
     io.observe(el)
-    tryPlay(el)
 
     return () => {
       io.disconnect()
-      cleanupWatch?.()
+      cleanupWatch()
       unregisterVideo(el)
     }
   }, [src])
@@ -36,7 +41,10 @@ export default function AutoVideo({ ref, src, className, onTimeUpdate }: Props) 
     <video
       ref={(el) => {
         inner.current = el
-        if (el) primeVideo(el)
+        if (el) {
+          primeVideo(el)
+          if (isMediaUnlocked()) tryPlay(el)
+        }
         if (typeof ref === 'function') ref(el)
         else if (ref) ref.current = el
       }}

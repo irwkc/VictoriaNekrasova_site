@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import Lenis from 'lenis'
-import { initMediaUnlock, unlockAllMedia } from './lib/unlockMedia'
+import { initMediaUnlock } from './lib/unlockMedia'
 import Preloader from './components/Preloader'
 import Cursor from './components/Cursor'
 import Nav from './components/Nav'
@@ -37,7 +37,6 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.style.overflow = ready ? '' : 'hidden'
-    if (ready) unlockAllMedia()
   }, [ready])
 
   return (
