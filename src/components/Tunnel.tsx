@@ -5,6 +5,7 @@ import { useScrollPin } from '../lib/useScrollPin'
 import { containSize, polaroidInner } from '../lib/polaroid'
 import PolaroidCard3D from './PolaroidCard3D'
 import { useContent } from '../context/ContentProvider'
+import { useLocale } from '../context/LocaleProvider'
 
 const GAP = 7
 
@@ -103,6 +104,7 @@ function Dust({ count }: { count: number }) {
 export default function Tunnel() {
   const section = useRef<HTMLElement>(null)
   const { content } = useContent()
+  const { t } = useLocale()
   const photos = content.corridor
   const { progress, phase, progressUi, layout } = useScrollPin(section, 3.8)
   const pct = progressUi * 100
@@ -146,10 +148,10 @@ export default function Tunnel() {
         </Canvas>
 
         <div className="absolute top-24 left-5 md:left-10 font-mono text-[10px] tracking-[0.35em] text-bone/60 pointer-events-none">
-          ( ARCHIVE FLY-THROUGH )
+          {t.tunnel.label}
         </div>
         <div className="absolute top-24 right-5 md:right-10 font-mono text-[10px] tracking-[0.3em] text-bone/60 tabular-nums pointer-events-none">
-          DEPTH {String(Math.round(pct))}%
+          {t.tunnel.depth} {String(Math.round(pct))}%
         </div>
 
         <div
@@ -157,9 +159,9 @@ export default function Tunnel() {
           style={{ opacity: pct < 6 ? 1 : 0 }}
         >
           <h2 className="font-display text-[10vw] leading-[0.85] text-center text-bone [text-shadow:0_4px_60px_rgba(10,10,10,0.6)]">
-            WALK
+            {t.tunnel.walk}
             <br />
-            <span className="outline-text">THE ARCHIVE</span>
+            <span className="outline-text">{t.tunnel.archive}</span>
           </h2>
         </div>
         <div
@@ -167,7 +169,7 @@ export default function Tunnel() {
           style={{ opacity: pct > 94 ? 1 : 0 }}
         >
           <h2 className="font-serif italic text-[6vw] text-blood text-center">
-            …and she keeps walking
+            {t.tunnel.outro}
           </h2>
         </div>
 

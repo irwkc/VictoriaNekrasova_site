@@ -11,6 +11,17 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.*
+!.env.example
+vn-api.env
+*.pem
+*.key
+
+# Uploaded media (server-side only)
+public/photos/upload-*
+public/photos/albums/**/*
+!public/photos/albums/**/.gitkeep
 
 # Editor directories and files
 .vscode/*

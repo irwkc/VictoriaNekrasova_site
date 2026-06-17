@@ -1,23 +1,25 @@
 import { motion } from 'motion/react'
 import PolaroidFrame from './PolaroidFrame'
 import { useContent } from '../context/ContentProvider'
+import { useLocale } from '../context/LocaleProvider'
 
 export default function Gallery() {
   const { content } = useContent()
+  const { t } = useLocale()
   const items = content.gallery
 
   return (
     <section className="relative bg-ink px-5 md:px-10 py-28">
       <div className="flex items-end justify-between mb-14">
         <h2 className="font-display text-[12vw] md:text-[7vw] leading-[0.85]">
-          SELECTED
+          {t.gallery.selected}
           <br />
-          <span className="outline-text">STILLS</span>
+          <span className="outline-text">{t.gallery.stills}</span>
         </h2>
         <div className="hidden md:block font-mono text-[10px] tracking-[0.35em] text-bone/50 text-right leading-relaxed">
-          {String(items.length).padStart(2, '0')} FRAMES / PAUSED MOTION
+          {String(items.length).padStart(2, '0')} {t.gallery.meta}
           <br />
-          HOVER TO REVEAL
+          {t.gallery.hover}
         </div>
       </div>
 

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  ADMIN_PASSWORD,
   DEFAULT_CONTENT,
   GALLERY_SPANS,
   defaultGalleryItem,
+  adminLogin,
+  ADMIN_SESSION_KEY,
+  validateAdminSession,
   downloadContent,
   resetContent,
   saveContent,
@@ -13,11 +15,14 @@ import {
   type SiteContent,
 } from '../lib/content'
 import PhotoPicker from '../components/admin/PhotoPicker'
+import AlbumManager from '../components/admin/AlbumManager'
 import AdminDialog, { type AdminDialogConfig } from '../components/admin/AdminDialog'
 import PolaroidFrame from '../components/PolaroidFrame'
 
 export default function AdminPage() {
-  const [authed, setAuthed] = useState(() => sessionStorage.getItem('vn-admin') === '1')
+  const [authState, setAuthState] = useState<'checking' | 'guest' | 'authed'>(() =>
+    sessionStorage.getItem('vn-admin') === '1' ? 'checking' : 'guest',
+  )
   const [draft, setDraft] = useState<SiteContent | null>(null)
   const [saved, setSaved] = useState(false)
   const [picker, setPicker] = useState<{ type: 'corridor'; index: number } | { type: 'gallery'; index: number } | null>(
@@ -42,7 +47,28 @@ export default function AdminPage() {
     return () => document.body.classList.remove('admin-route')
   }, [])
 
-  if (!authed) return <Login onOk={() => setAuthed(true)} />
+  useEffect(() => {
+    if (authState !== 'checking') return
+    validateAdminSession().then((ok) => {
+      if (ok) {
+        setAuthState('authed')
+        return
+      }
+      sessionStorage.removeItem('vn-admin')
+      sessionStorage.removeItem(ADMIN_SESSION_KEY)
+      setAuthState('guest')
+    })
+  }, [authState])
+
+  if (authState === 'checking') {
+    return (
+      <div className="min-h-screen bg-ink flex items-center justify-center font-mono text-[10px] tracking-[0.35em] text-bone/50">
+        CHECKING SESSION…
+      </div>
+    )
+  }
+
+  if (authState === 'guest') return <Login onOk={() => setAuthState('authed')} />
 
   if (!draft) return <AdminLoader onLoad={setDraft} />
 
@@ -90,8 +116,12 @@ export default function AdminPage() {
   }
 
   const handleSave = async () => {
-    await saveContent(draft)
-    setSaved(true)
+    try {
+      await saveContent(draft)
+      setSaved(true)
+    } catch (e) {
+      showAlert('SAVE FAILED', e instanceof Error ? e.message : 'Could not save to server')
+    }
   }
 
   const handleReset = () => {
@@ -208,6 +238,15 @@ export default function AdminPage() {
             ))}
           </div>
         </section>
+
+        <AlbumManager
+          albums={draft.albums}
+          onChange={(albums) => {
+            setDraft({ ...draft, albums })
+            setSaved(false)
+          }}
+          onError={(message) => showAlert('UPLOAD FAILED', message)}
+        />
       </div>
 
       {picker && (
@@ -235,7 +274,7 @@ function AdminLoader({ onLoad }: { onLoad: (c: SiteContent) => void }) {
   const [err, setErr] = useState(false)
 
   useEffect(() => {
-    loadContent().then(onLoad).catch(() => setErr(true))
+    loadContent({ preferLocal: true }).then(onLoad).catch(() => setErr(true))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   if (err) return <p className="p-10 text-blood font-mono text-sm">Failed to load content</p>
@@ -247,16 +286,34 @@ function AdminLoader({ onLoad }: { onLoad: (c: SiteContent) => void }) {
 }
 
 function Login({ onOk }: { onOk: () => void }) {
+  const [user, setUser] = useState('')
   const [pass, setPass] = useState('')
-  const [err, setErr] = useState(false)
+  const [err, setErr] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (pass === ADMIN_PASSWORD) {
-      sessionStorage.setItem('vn-admin', '1')
-      onOk()
-    } else {
-      setErr(true)
+    setLoading(true)
+    setErr('')
+    try {
+      const result = await adminLogin(user.trim(), pass)
+      if (result.ok) {
+        sessionStorage.setItem('vn-admin', '1')
+        sessionStorage.setItem(ADMIN_SESSION_KEY, result.token)
+        onOk()
+        return
+      }
+      if (result.locked) {
+        const min = Math.ceil((result.remainingMs ?? 0) / 60000)
+        setErr(`IP locked for ${min} min after 3 failed attempts`)
+        return
+      }
+      const left = result.attemptsLeft
+      setErr(left != null ? `Wrong login or password (${left} attempts left)` : 'Wrong login or password')
+    } catch {
+      setErr('Login unavailable — API not reachable')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -266,20 +323,36 @@ function Login({ onOk }: { onOk: () => void }) {
         VN<span className="text-blood">.</span>
       </Link>
       <form onSubmit={submit} className="w-full max-w-xs space-y-4">
-        <label className="block font-mono text-[10px] tracking-[0.35em] text-bone/50">PASSWORD</label>
-        <input
-          type="password"
-          value={pass}
-          onChange={(e) => {
-            setPass(e.target.value)
-            setErr(false)
-          }}
-          className={input}
-          autoFocus
-        />
-        {err && <p className="font-mono text-xs text-blood">Wrong password</p>}
-        <button type="submit" className={`${btnPrimary} w-full`}>
-          ENTER ADMIN
+        <label className="block">
+          <span className="font-mono text-[10px] tracking-[0.35em] text-bone/50">LOGIN</span>
+          <input
+            type="text"
+            value={user}
+            onChange={(e) => {
+              setUser(e.target.value)
+              setErr('')
+            }}
+            className={input}
+            autoComplete="username"
+            autoFocus
+          />
+        </label>
+        <label className="block">
+          <span className="font-mono text-[10px] tracking-[0.35em] text-bone/50">PASSWORD</span>
+          <input
+            type="password"
+            value={pass}
+            onChange={(e) => {
+              setPass(e.target.value)
+              setErr('')
+            }}
+            className={input}
+            autoComplete="current-password"
+          />
+        </label>
+        {err && <p className="font-mono text-xs text-blood leading-relaxed">{err}</p>}
+        <button type="submit" disabled={loading} className={`${btnPrimary} w-full disabled:opacity-40`}>
+          {loading ? 'CHECKING…' : 'ENTER ADMIN'}
         </button>
       </form>
       <Link to="/" className="mt-8 font-mono text-[10px] tracking-[0.3em] text-bone/40 hover:text-bone">

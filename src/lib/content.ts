@@ -4,10 +4,28 @@ export type GalleryItem = {
   span: string
 }
 
+export type AlbumId = 'tests' | 'photoshoots' | 'shows' | 'backstage' | 'clips'
+
+export type AlbumItem = {
+  src: string
+  cap: string
+}
+
+export type Albums = Record<AlbumId, AlbumItem[]>
+
 export type SiteContent = {
   corridor: string[]
   gallery: GalleryItem[]
+  albums: Albums
 }
+
+export const ALBUM_CATEGORIES: { id: AlbumId }[] = [
+  { id: 'tests' },
+  { id: 'photoshoots' },
+  { id: 'shows' },
+  { id: 'backstage' },
+  { id: 'clips' },
+]
 
 export const PHOTO_LIBRARY = [
   '/photos/chains1.jpg',
@@ -16,37 +34,22 @@ export const PHOTO_LIBRARY = [
   '/photos/chains4.jpg',
   '/photos/coat1.jpg',
   '/photos/coat2.jpg',
-  '/photos/coat3.jpg',
-  '/photos/coat4.jpg',
   '/photos/crop1.jpg',
-  '/photos/crop2.jpg',
   '/photos/crop3.jpg',
-  '/photos/crop4.jpg',
-  '/photos/crop5.jpg',
   '/photos/dapple1.jpg',
   '/photos/dapple2.jpg',
   '/photos/red1.jpg',
   '/photos/red2.jpg',
   '/photos/red3.jpg',
-  '/photos/red4.jpg',
-  '/photos/red5.jpg',
   '/photos/sheer1.jpg',
   '/photos/sheer2.jpg',
   '/photos/sheer3.jpg',
   '/photos/sheer4.jpg',
   '/photos/suit1.jpg',
   '/photos/suit2.jpg',
-  '/photos/suit3.jpg',
-  '/photos/suit4.jpg',
   '/photos/suit5.jpg',
-  '/photos/suit6.jpg',
-  '/photos/suit7.jpg',
   '/photos/tux1.jpg',
-  '/photos/tux2.jpg',
   '/photos/tux3.jpg',
-  '/photos/tux4.jpg',
-  '/photos/tux5.jpg',
-  '/photos/tux6.jpg',
 ] as const
 
 export const GALLERY_SPANS = [
@@ -57,6 +60,16 @@ export const GALLERY_SPANS = [
   'md:col-span-5 md:row-span-2',
   'md:col-span-6 md:row-span-2',
 ] as const
+
+export function emptyAlbums(): Albums {
+  return {
+    tests: [],
+    photoshoots: [],
+    shows: [],
+    backstage: [],
+    clips: [],
+  }
+}
 
 export function defaultGalleryItem(src = PHOTO_LIBRARY[0]): GalleryItem {
   return { src, cap: 'UNTITLED', span: 'md:col-span-4' }
@@ -90,49 +103,103 @@ export const DEFAULT_CONTENT: SiteContent = {
     { src: '/photos/chains4.jpg', cap: 'GOLD CHAINS — DETAIL', span: 'md:col-span-4' },
     { src: '/photos/sheer3.jpg', cap: 'MESH — RED LIP', span: 'md:col-span-4' },
   ],
+  albums: emptyAlbums(),
 }
 
 function fromStorage(): SiteContent | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
-    return JSON.parse(raw) as SiteContent
+    return normalizeContent(JSON.parse(raw) as SiteContent)
   } catch {
     return null
   }
 }
 
-export async function loadContent(): Promise<SiteContent> {
-  const local = fromStorage()
-  if (local) return local
+export function normalizeContent(json: Partial<SiteContent>): SiteContent {
+  return {
+    corridor: json.corridor ?? DEFAULT_CONTENT.corridor,
+    gallery: json.gallery ?? DEFAULT_CONTENT.gallery,
+    albums: { ...emptyAlbums(), ...json.albums },
+  }
+}
+
+export async function loadContent(options?: { preferLocal?: boolean }): Promise<SiteContent> {
+  if (options?.preferLocal) {
+    const local = fromStorage()
+    if (local) return local
+  }
+
+  try {
+    const res = await fetch('/api/content')
+    if (res.ok) return normalizeContent((await res.json()) as SiteContent)
+  } catch {
+    /* no API */
+  }
 
   try {
     const res = await fetch('/content.json')
-    if (res.ok) {
-      const json = (await res.json()) as SiteContent
-      return {
-        corridor: json.corridor ?? DEFAULT_CONTENT.corridor,
-        gallery: json.gallery ?? DEFAULT_CONTENT.gallery,
-      }
-    }
+    if (res.ok) return normalizeContent((await res.json()) as SiteContent)
   } catch {
     /* offline / static */
   }
+
+  const local = fromStorage()
+  if (local) return local
+
   return DEFAULT_CONTENT
+}
+
+export async function adminLogin(username: string, password: string): Promise<{ ok: true; token: string } | { ok: false; locked?: boolean; remainingMs?: number; attemptsLeft?: number }> {
+  const res = await fetch('/api/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  })
+  const data = (await res.json()) as {
+    token?: string
+    error?: string
+    remainingMs?: number
+    attemptsLeft?: number
+  }
+  if (res.ok && data.token) return { ok: true, token: data.token }
+  if (res.status === 429) return { ok: false, locked: true, remainingMs: data.remainingMs }
+  return { ok: false, attemptsLeft: data.attemptsLeft }
+}
+
+function authHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const token = sessionStorage.getItem(ADMIN_SESSION_KEY)
+  if (token) headers.Authorization = `Bearer ${token}`
+  return headers
 }
 
 export async function saveContent(data: SiteContent): Promise<void> {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
   window.dispatchEvent(new Event('vn-content-updated'))
 
+  const res = await fetch('/api/content', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(data, null, 2),
+  })
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { error?: string }
+    if (res.status === 401) throw new Error('Session expired — log in again')
+    throw new Error(err.error || `Save failed (${res.status})`)
+  }
+}
+
+export async function validateAdminSession(): Promise<boolean> {
+  const token = sessionStorage.getItem(ADMIN_SESSION_KEY)
+  if (!token) return false
   try {
-    await fetch('/api/content', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data, null, 2),
+    const res = await fetch('/api/admin/session', {
+      headers: { Authorization: `Bearer ${token}` },
     })
+    return res.ok
   } catch {
-    /* no dev server API */
+    return false
   }
 }
 
@@ -151,7 +218,7 @@ export function downloadContent(data: SiteContent) {
   URL.revokeObjectURL(url)
 }
 
-export const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD ?? 'admin'
+export const ADMIN_SESSION_KEY = 'vn-admin-token'
 
 export async function fetchPhotoLibrary(): Promise<string[]> {
   try {
@@ -166,7 +233,7 @@ export async function fetchPhotoLibrary(): Promise<string[]> {
   return [...PHOTO_LIBRARY]
 }
 
-export async function uploadPhoto(file: File): Promise<string> {
+export async function uploadPhoto(file: File, album?: AlbumId): Promise<string> {
   const buf = new Uint8Array(await file.arrayBuffer())
   let binary = ''
   for (let i = 0; i < buf.length; i++) binary += String.fromCharCode(buf[i]!)
@@ -174,10 +241,27 @@ export async function uploadPhoto(file: File): Promise<string> {
 
   const res = await fetch('/api/upload', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: file.name, data }),
+    headers: authHeaders(),
+    body: JSON.stringify({ name: file.name, data, album }),
   })
   if (!res.ok) throw new Error('upload failed')
   const { url } = (await res.json()) as { url: string }
   return url
+}
+
+export async function deleteMedia(url: string): Promise<void> {
+  const res = await fetch('/api/delete', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ url }),
+  })
+  if (!res.ok) throw new Error('delete failed')
+}
+
+export function getAlbumCategory(id: string) {
+  return ALBUM_CATEGORIES.find((c) => c.id === id)
+}
+
+export function isVideoSrc(src: string) {
+  return /\.(mp4|webm|mov)$/i.test(src)
 }

@@ -1,20 +1,93 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VICTORIA NEKRASOVA — MODEL</title>
-    <meta name="description" content="Victoria Nekrasova — fashion model. IMF Model Agency. Editorial, runway, campaign." />
+    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="color-scheme" content="dark" />
+
+    <title>VICTORIA NEKRASOVA</title>
+    <meta name="description" content="Victoria Nekrasova — fashion model. Editorial, runway, campaign. Portfolio and booking." />
+    <link rel="canonical" href="https://victorianekrasova.ru/" />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Victoria Nekrasova" />
+
+    <link rel="alternate" hreflang="ru" href="https://victorianekrasova.ru/" />
+    <link rel="alternate" hreflang="en" href="https://victorianekrasova.ru/" />
+    <link rel="alternate" hreflang="x-default" href="https://victorianekrasova.ru/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Victoria Nekrasova" />
+    <meta property="og:url" content="https://victorianekrasova.ru/" />
+    <meta property="og:title" content="VICTORIA NEKRASOVA" />
+    <meta property="og:description" content="Victoria Nekrasova — fashion model. Editorial, runway, campaign. Portfolio and booking." />
+    <meta property="og:image" content="https://victorianekrasova.ru/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Victoria Nekrasova — editorial portrait" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:locale:alternate" content="en_US" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="VICTORIA NEKRASOVA" />
+    <meta name="twitter:description" content="Victoria Nekrasova — fashion model. Editorial, runway, campaign. Portfolio and booking." />
+    <meta name="twitter:image" content="https://victorianekrasova.ru/og-image.jpg" />
+    <meta name="twitter:image:alt" content="Victoria Nekrasova — editorial portrait" />
+
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Victoria Nekrasova",
+        "jobTitle": "Fashion Model",
+        "url": "https://victorianekrasova.ru/",
+        "image": "https://victorianekrasova.ru/og-image.jpg",
+        "sameAs": ["https://www.instagram.com/victorianekrasovaaa/"]
+      }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Anton&family=Cormorant+Garamond:ital,wght@1,300;1,400;1,500&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="preload" href="/videos/projector.mp4" as="video" type="video/mp4" />
-    <link rel="preload" href="/videos/face.mp4" as="video" type="video/mp4" />
   </head>
   <body>
+    <div
+      id="boot-splash"
+      style="
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #0a0a0a;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: ui-monospace, monospace;
+      "
+    >
+      <div style="font-size: 10px; letter-spacing: 0.35em; color: rgba(232, 229, 223, 0.5); margin-bottom: 1.5rem">
+        LOADING SEQUENCE
+      </div>
+      <div style="font-size: 13vw; line-height: 1; color: #e8e5df; font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif">
+        VN<span style="color: #ff2b1f">.</span>
+      </div>
+      <div style="margin-top: 2rem; width: 200px; height: 1px; background: rgba(232, 229, 223, 0.15); position: relative; overflow: hidden">
+        <div style="position: absolute; inset: 0 auto 0 0; width: 0; background: #ff2b1f"></div>
+      </div>
+      <div style="margin-top: 0.75rem; font-size: 12px; color: rgba(232, 229, 223, 0.6); font-variant-numeric: tabular-nums">
+        0%
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

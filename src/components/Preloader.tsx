@@ -1,14 +1,22 @@
-import { useEffect, useState, type PointerEvent } from 'react'
-import { motion, AnimatePresence } from 'motion/react'
+import { useEffect, useState } from 'react'
+import { motion } from 'motion/react'
 import { preloadImages } from '../lib/frames'
 import { preloadVideos, unlockAllMedia } from '../lib/unlockMedia'
+import { useLocale, type Locale } from '../context/LocaleProvider'
 
 const ASSETS = ['/photos/dapple1.jpg', '/photos/face_cut.png']
 const MIN_DURATION = 1400
+const CURTAIN_MS = 850
 
-type Phase = 'loading' | 'enter' | 'exit'
+type Phase = 'loading' | 'choose' | 'exit'
 
-export default function Preloader({ onDone }: { onDone: () => void }) {
+type Props = {
+  onReveal: () => void
+  onDone: () => void
+}
+
+export default function Preloader({ onReveal, onDone }: Props) {
+  const { t, setLocale } = useLocale()
   const [pct, setPct] = useState(0)
   const [phase, setPhase] = useState<Phase>('loading')
 
@@ -36,7 +44,7 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
       if (!alive) return
       clearInterval(raf)
       setPct(100)
-      setPhase('enter')
+      setPhase('choose')
     })
     return () => {
       alive = false
@@ -44,46 +52,49 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
     }
   }, [])
 
-  const enter = (e: PointerEvent) => {
-    if (phase !== 'enter') return
-    e.preventDefault()
-    // Safari: play() must run in the same task as the user gesture
+  const pick = (locale: Locale) => {
+    setLocale(locale)
     unlockAllMedia()
+    onReveal()
     setPhase('exit')
-    window.setTimeout(onDone, 900)
+  }
+
+  if (phase === 'exit') {
+    return (
+      <motion.div
+        className="fixed inset-0 z-[100] bg-ink flex flex-col items-center justify-center pointer-events-none"
+        initial={{ y: 0 }}
+        animate={{ y: '-100%' }}
+        transition={{ duration: CURTAIN_MS / 1000, ease: [0.76, 0, 0.24, 1] }}
+        onAnimationComplete={onDone}
+      >
+        <Inner pct={100} showChoose={false} t={t} onPick={pick} />
+      </motion.div>
+    )
   }
 
   return (
-    <AnimatePresence>
-      {phase !== 'exit' ? (
-        <motion.div
-          key="loader"
-          className="fixed inset-0 z-[100] bg-ink flex flex-col items-center justify-center cursor-pointer"
-          onPointerDown={enter}
-          exit={{ opacity: 0 }}
-        >
-          <Inner pct={pct} showEnter={phase === 'enter'} />
-        </motion.div>
-      ) : (
-        <motion.div
-          key="curtain"
-          className="fixed inset-0 z-[100] bg-ink flex flex-col items-center justify-center pointer-events-none"
-          initial={{ y: 0 }}
-          animate={{ y: '-100%' }}
-          transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1] }}
-        >
-          <Inner pct={100} showEnter={false} />
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div className="fixed inset-0 z-[100] bg-ink flex flex-col items-center justify-center">
+      <Inner pct={pct} showChoose={phase === 'choose'} t={t} onPick={pick} />
+    </div>
   )
 }
 
-function Inner({ pct, showEnter }: { pct: number; showEnter: boolean }) {
+function Inner({
+  pct,
+  showChoose,
+  t,
+  onPick,
+}: {
+  pct: number
+  showChoose: boolean
+  t: ReturnType<typeof useLocale>['t']
+  onPick: (locale: Locale) => void
+}) {
   return (
     <>
       <div className="font-mono text-[10px] tracking-[0.35em] text-bone/50 mb-6">
-        LOADING SEQUENCE
+        {t.preloader.loading}
       </div>
       <div className="font-display text-[13vw] leading-none select-none pointer-events-none">
         <span className="text-bone">VN</span>
@@ -98,21 +109,32 @@ function Inner({ pct, showEnter }: { pct: number; showEnter: boolean }) {
       <div className="mt-3 font-mono text-xs text-bone/60 tabular-nums pointer-events-none">
         {pct}%
       </div>
-      {showEnter && (
+      {showChoose && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="mt-10 font-mono text-[10px] tracking-[0.45em] text-bone pointer-events-none"
+          className="mt-10 flex flex-col items-center gap-4"
         >
-          TAP TO ENTER
-          <motion.span
-            className="inline-block ml-2 text-blood"
-            animate={{ opacity: [1, 0.25, 1] }}
-            transition={{ duration: 1.2, repeat: Infinity }}
-          >
-            ↓
-          </motion.span>
+          <p className="font-mono text-[10px] tracking-[0.45em] text-bone/50">{t.preloader.chooseLang}</p>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => onPick('ru')}
+              data-hover
+              className="font-mono text-[10px] tracking-[0.35em] border border-bone/40 px-6 py-3 text-bone hover:bg-bone hover:text-ink transition-colors duration-200"
+            >
+              {t.preloader.ru}
+            </button>
+            <button
+              type="button"
+              onClick={() => onPick('en')}
+              data-hover
+              className="font-mono text-[10px] tracking-[0.35em] border border-blood/60 px-6 py-3 text-bone hover:bg-blood hover:text-bone transition-colors duration-200"
+            >
+              {t.preloader.en}
+            </button>
+          </div>
         </motion.div>
       )}
     </>

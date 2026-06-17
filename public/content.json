@@ -58,11 +58,13 @@
       "src": "/photos/sheer3.jpg",
       "cap": "MESH — RED LIP",
       "span": "md:col-span-4"
-    },
-    {
-      "src": "/photos/chains1.jpg",
-      "cap": "UNTITLED",
-      "span": "md:col-span-4"
     }
-  ]
+  ],
+  "albums": {
+    "tests": [],
+    "photoshoots": [],
+    "shows": [],
+    "backstage": [],
+    "clips": []
+  }
 }
