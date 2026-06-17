@@ -1,11 +1,10 @@
 # VICTORIA NEKRASOVA — Digital Portfolio
 
-Fashion-first portfolio platform for Victoria Nekrasova with cinematic storytelling, 3D corridor navigation, RU/EN localization, and a production-ready admin flow for managing media.
+Fashion-first portfolio platform for Victoria Nekrasova with cinematic storytelling, 3D corridor navigation, and RU/EN localization.
 
 ## Live
 
 - Main site: [https://victorianekrasova.ru](https://victorianekrasova.ru)
-- Admin panel: [https://victorianekrasova.ru/admin](https://victorianekrasova.ru/admin)
 
 ## Why this project
 
@@ -21,7 +20,6 @@ This project is built to present model work as an editorial experience, not a st
 
 - **Brand experience:** custom preloader, animated transitions, cinematic typography
 - **Portfolio architecture:** corridor, gallery, and category-based album pages
-- **Content management:** secure admin login, content editing, media upload/delete APIs
 - **Production deployment:** automated build + rsync deploy + nginx/api service setup
 - **SEO/marketing foundation:** canonical tags, Open Graph, sitemap, robots, social preview image
 
@@ -32,7 +30,7 @@ This project is built to present model work as an editorial experience, not a st
 - Motion
 - Three.js / React Three Fiber
 - Lenis smooth scrolling
-- Node.js API (content + admin auth + media ops)
+- Node.js API (content and media operations)
 - nginx + Let's Encrypt deployment scripts
 
 ## Local Development
@@ -71,7 +69,7 @@ bash scripts/setup-ssl.sh victorianekrasova.ru
 ## Repository Structure
 
 - `src/` — frontend app (pages, components, i18n, animation logic)
-- `server/` — Node API for admin auth/content/media operations
+- `server/` — Node API for content and media operations
 - `public/` — static media and SEO assets
 - `scripts/` — deploy, SSL setup, favicon/OG generation utilities
 
