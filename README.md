@@ -1,73 +1,80 @@
-# React + TypeScript + Vite
+# VICTORIA NEKRASOVA — Digital Portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Fashion-first portfolio platform for Victoria Nekrasova with cinematic storytelling, 3D corridor navigation, RU/EN localization, and a production-ready admin flow for managing media.
 
-Currently, two official plugins are available:
+## Live
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Main site: [https://victorianekrasova.ru](https://victorianekrasova.ru)
+- Admin panel: [https://victorianekrasova.ru/admin](https://victorianekrasova.ru/admin)
 
-## React Compiler
+## Why this project
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+This project is built to present model work as an editorial experience, not a static gallery:
 
-## Expanding the ESLint configuration
+- Immersive hero with interactive visual effects
+- Scroll-driven sequence and 3D archive corridor
+- Curated gallery and album-based portfolio sections
+- RU/EN localization with language-first preloader flow
+- Fast media delivery and SEO-ready metadata
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Feature Highlights
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Brand experience:** custom preloader, animated transitions, cinematic typography
+- **Portfolio architecture:** corridor, gallery, and category-based album pages
+- **Content management:** secure admin login, content editing, media upload/delete APIs
+- **Production deployment:** automated build + rsync deploy + nginx/api service setup
+- **SEO/marketing foundation:** canonical tags, Open Graph, sitemap, robots, social preview image
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Tech Stack
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- React + TypeScript + Vite
+- Tailwind CSS
+- Motion
+- Three.js / React Three Fiber
+- Lenis smooth scrolling
+- Node.js API (content + admin auth + media ops)
+- nginx + Let's Encrypt deployment scripts
+
+## Local Development
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Build:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
 ```
+
+Preview production build:
+
+```bash
+npm run preview
+```
+
+## Deployment
+
+Deploy to VPS using project scripts:
+
+```bash
+bash scripts/deploy.sh
+```
+
+Enable HTTPS (once DNS points to the server):
+
+```bash
+bash scripts/setup-ssl.sh victorianekrasova.ru
+```
+
+## Repository Structure
+
+- `src/` — frontend app (pages, components, i18n, animation logic)
+- `server/` — Node API for admin auth/content/media operations
+- `public/` — static media and SEO assets
+- `scripts/` — deploy, SSL setup, favicon/OG generation utilities
+
+## License
+
+MIT — see `LICENSE`.
